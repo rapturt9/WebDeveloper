@@ -38,6 +38,7 @@ This README outlines the requirements, architecture, and implementation details 
 - **AI-Powered Code Generation**: Integration with OpenHands to interpret instructions and modify website code accordingly.
 - **Modified Website Download**: Allow users to download the modified website files upon completion.
 - **A/B Test Export**: Export the original and modified website versions as an A/B test setup for developers.
+- **File Management**: Handle storage and retrieval of website files and modification instructions.
 
 ---
 
@@ -195,6 +196,75 @@ The application follows a **Modular** architecture to ensure scalability and mai
 4. **Return Modified Website**:
    - Send the updated website files back to the frontend for user download.
 
+### Using OpenHands Docker Container
+
+OpenHands provides a Docker container that can be used to execute instructions. Below are the steps to integrate OpenHands using Docker:
+
+1. **Pull the OpenHands Docker Image**:
+
+   ```bash
+   docker pull docker.all-hands.dev/all-hands-ai/runtime:0.13-nikolaik
+   ```
+
+2. **Run the OpenHands Container**:
+
+   ```bash
+   docker run -it --pull=always \
+       -e SANDBOX_RUNTIME_CONTAINER_IMAGE=docker.all-hands.dev/all-hands-ai/runtime:0.13-nikolaik \
+       -v /var/run/docker.sock:/var/run/docker.sock \
+       -p 3000:3000 \
+       --add-host host.docker.internal:host-gateway \
+       --name openhands-app \
+       docker.all-hands.dev/all-hands-ai/openhands:0.13
+   ```
+
+3. **Backend Integration**:
+
+   - **API Communication**: The backend will communicate with the OpenHands container via HTTP requests to `http://localhost:3000` (assuming default port mapping).
+   - **Docker Networking**: Ensure that both the backend and OpenHands containers are on the same Docker network if deployed separately. Alternatively, use Docker Compose to orchestrate both services.
+
+4. **Using Docker Compose for Simplified Setup**:
+
+   To simplify running both the backend and OpenHands together, you can use `docker-compose.yml`:
+
+   ```yaml
+   version: "3.8"
+
+   services:
+     backend:
+       build: ./backend
+       ports:
+         - "5000:5000"
+       environment:
+         - OPENDEVIN_API_KEY=your_openhands_api_key
+         - STORAGE_BUCKET=your_storage_bucket
+       depends_on:
+         - openhands
+
+     openhands:
+       image: docker.all-hands.dev/all-hands-ai/openhands:0.13
+       ports:
+         - "3000:3000"
+       environment:
+         - SANDBOX_RUNTIME_CONTAINER_IMAGE=docker.all-hands.dev/all-hands-ai/runtime:0.13-nikolaik
+       volumes:
+         - /var/run/docker.sock:/var/run/docker.sock
+       extra_hosts:
+         - "host.docker.internal:host-gateway"
+   ```
+
+   **Steps**:
+
+   1. **Create `docker-compose.yml`** in the root directory of your project.
+   2. **Configure Environment Variables**: Replace `your_openhands_api_key` and `your_storage_bucket` with actual values.
+   3. **Run Docker Compose**:
+
+      ```bash
+      docker-compose up -d
+      ```
+
+   This setup ensures that both the backend and OpenHands services are up and running, and the backend can communicate with OpenHands via `http://openhands:3000`.
+
 ### Error Handling
 
 - **AI Limitations**: Handle cases where OpenHands cannot interpret instructions correctly by providing fallback options or requesting clarification from the user.
@@ -325,9 +395,9 @@ The application follows a **Modular** architecture to ensure scalability and mai
 
 ### Additional Setup
 
-- **Puppeteer Configuration**:
-  - Ensure that Puppeteer can run in your environment by verifying that Chromium dependencies are installed.
-  - Configure any proxy or network settings if necessary.
+- **OpenHands Docker Container**:
+
+  Ensure that the OpenHands Docker container is running as per the instructions in the [Integration with OpenHands](#integration-with-openhands) section.
 
 ---
 
@@ -357,7 +427,7 @@ The application follows a **Modular** architecture to ensure scalability and mai
    - **Create a `Dockerfile`** in the backend directory:
 
      ```dockerfile
-     FROM node:18-alpine
+     FROM node:16-alpine
 
      WORKDIR /app
 
@@ -365,6 +435,7 @@ The application follows a **Modular** architecture to ensure scalability and mai
      RUN yarn install --production
 
      COPY . .
+     RUN yarn build
 
      CMD ["node", "dist/index.js"]
      ```
@@ -376,24 +447,25 @@ The application follows a **Modular** architecture to ensure scalability and mai
 
      services:
        backend:
-         build: .
+         build: ./backend
          ports:
            - "5000:5000"
          environment:
            - OPENDEVIN_API_KEY=${OPENDEVIN_API_KEY}
            - STORAGE_BUCKET=${STORAGE_BUCKET}
          depends_on:
-           - db
+           - openhands
 
-       db:
-         image: mongo:4.4
+       openhands:
+         image: docker.all-hands.dev/all-hands-ai/openhands:0.13
          ports:
-           - "27017:27017"
+           - "3000:3000"
+         environment:
+           - SANDBOX_RUNTIME_CONTAINER_IMAGE=docker.all-hands.dev/all-hands-ai/runtime:0.13-nikolaik
          volumes:
-           - db-data:/data/db
-
-     volumes:
-       db-data:
+           - /var/run/docker.sock:/var/run/docker.sock
+         extra_hosts:
+           - "host.docker.internal:host-gateway"
      ```
 
 2. **Deploy to AWS**:
@@ -406,23 +478,26 @@ The application follows a **Modular** architecture to ensure scalability and mai
 
    - **Steps for AWS ECS with Fargate**:
 
-     1. **Push Docker Image to AWS ECR**:
+     1. **Push Docker Images to AWS ECR**:
 
-        - **Create an ECR Repository**.
+        - **Create ECR Repositories** for both backend and OpenHands (if not using the official OpenHands image).
+
         - **Authenticate Docker to AWS ECR**:
 
           ```bash
           aws ecr get-login-password --region your-region | docker login --username AWS --password-stdin your-account-id.dkr.ecr.your-region.amazonaws.com
           ```
 
-        - **Build and Tag Docker Image**:
+        - **Build and Tag Docker Images**:
 
           ```bash
-          docker build -t ai-web-developer-backend .
+          docker build -t ai-web-developer-backend ./backend
           docker tag ai-web-developer-backend:latest your-account-id.dkr.ecr.your-region.amazonaws.com/ai-web-developer-backend:latest
+
+          # OpenHands uses the official image; no need to build unless customization is required
           ```
 
-        - **Push Image to ECR**:
+        - **Push Images to ECR**:
 
           ```bash
           docker push your-account-id.dkr.ecr.your-region.amazonaws.com/ai-web-developer-backend:latest
@@ -433,15 +508,22 @@ The application follows a **Modular** architecture to ensure scalability and mai
         - Navigate to ECS in the AWS Console.
         - Create a new cluster using Fargate.
 
-     3. **Create a Task Definition**:
+     3. **Create Task Definitions**:
 
-        - Use the pushed Docker image.
-        - Set necessary environment variables.
-        - Configure networking (VPC, subnets, security groups).
+        - **Backend Task Definition**:
 
-     4. **Run the Service**:
+          - Use the pushed backend Docker image.
+          - Set necessary environment variables (`OPENDEVIN_API_KEY`, `STORAGE_BUCKET`).
+          - Configure networking (VPC, subnets, security groups).
 
-        - Deploy the task in the ECS cluster.
+        - **OpenHands Task Definition** (if using a custom image):
+          - Use the official OpenHands image.
+          - Set environment variables (`SANDBOX_RUNTIME_CONTAINER_IMAGE`).
+          - Mount Docker socket if necessary.
+
+     4. **Run the Services**:
+
+        - Deploy the tasks in the ECS cluster.
         - Configure load balancing if needed.
 
 3. **Configure Environment Variables**:
@@ -453,7 +535,7 @@ The application follows a **Modular** architecture to ensure scalability and mai
 4. **Set Up Networking**:
 
    - **VPC Configuration**: Ensure the backend is accessible to the frontend.
-   - **Security Groups**: Open necessary ports (e.g., 5000 for API).
+   - **Security Groups**: Open necessary ports (e.g., 5000 for API, 3000 for OpenHands if needed).
 
 5. **Scaling and Monitoring**:
 
@@ -533,7 +615,7 @@ The application follows a **Modular** architecture to ensure scalability and mai
                IMAGE_TAG: latest
              run: |
                aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-               docker build -t $ECR_REPO .
+               docker build -t $ECR_REPO ./backend
                docker tag $ECR_REPO:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG
                docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG
 
@@ -545,6 +627,11 @@ The application follows a **Modular** architecture to ensure scalability and mai
                cluster: ai-web-developer-cluster
                wait-for-service-stability: true
      ```
+
+   - **Notes**:
+     - Ensure that AWS credentials with appropriate permissions are configured in GitHub Secrets.
+     - Replace placeholders like `your-region` and `your-account-id` with actual values.
+     - The `backend-task-def.json` should be predefined with necessary configurations.
 
 ---
 

@@ -1,0 +1,39 @@
+# docker-compose.yml
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: ai-web-developer-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - OPENHANDS_WORKSPACE=/opt/workspace
+      - LLM_API_KEY=${LLM_API_KEY}
+      - LLM_MODEL=${LLM_MODEL}
+    env_file:
+      - .env
+    volumes:
+      - ./workspace:/opt/workspace
+      - ./:/app
+    depends_on:
+      - openhands
+
+  openhands:
+    build:
+      context: .
+      dockerfile: Dockerfile.openhands
+    container_name: openhands-service
+    ports:
+      - "3000:3000"
+    environment:
+      - WORKSPACE=/opt/workspace
+      - LLM_API_KEY=${LLM_API_KEY}
+      - LLM_MODEL=${LLM_MODEL}
+    volumes:
+      - ./workspace:/opt/workspace
+      - /var/run/docker.sock:/var/run/docker.sock
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

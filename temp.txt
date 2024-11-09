@@ -1,0 +1,363 @@
+------ ai-web-developer/src/app/components/Footer.tsx ------
+``````
+// src/components/Footer.tsx
+export default function Footer() {
+  return (
+    <footer className="bg-white shadow mt-auto">
+      <div className="container mx-auto p-4 text-center">
+        <p>
+          &copy; {new Date().getFullYear()} AI Web Developer. All rights
+          reserved.
+        </p>
+        <div className="space-x-4">
+          <a href="/docs">Documentation</a>
+          <a href="/support">Support</a>
+          <a href="/license">License</a>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+``````
+------ ai-web-developer/src/app/components/Header.tsx ------
+``````
+// src/components/Header.tsx
+import Link from "next/link";
+
+export default function Header() {
+  return (
+    <header className="bg-white shadow">
+      <div className="container mx-auto flex items-center justify-between p-4">
+        <Link href="/">
+          <span className="text-xl font-bold">AI Web Developer</span>
+        </Link>
+        <nav className="space-x-4">
+          <Link href="/">Home</Link>
+          <Link href="/export">Export A/B Test</Link>
+          <Link href="/about">About</Link>
+        </nav>
+      </div>
+    </header>
+  );
+}
+
+``````
+------ ai-web-developer/src/app/components/InstructionPanel.tsx ------
+``````
+// src/components/InstructionPanel.tsx
+import { Dispatch, SetStateAction, useState } from "react";
+import { PlusIcon } from "@heroicons/react/24/solid";
+import { Dialog } from "@headlessui/react";
+
+interface InstructionPanelProps {
+  websiteURL: string;
+  setWebsiteURL: Dispatch<SetStateAction<string>>;
+  instructions: string[];
+  setInstructions: Dispatch<SetStateAction<string[]>>;
+}
+
+export default function InstructionPanel({
+  websiteURL,
+  setWebsiteURL,
+  instructions,
+  setInstructions,
+}: InstructionPanelProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newInstruction, setNewInstruction] = useState("");
+
+  const addInstruction = () => {
+    setInstructions([...instructions, newInstruction]);
+    setNewInstruction("");
+    setIsModalOpen(false);
+  };
+
+  return (
+    <section className="w-full md:w-1/3 p-4 space-y-4">
+      {/* URL Input Form */}
+      <div>
+        <label htmlFor="websiteURL" className="block text-sm font-medium">
+          Enter Website URL
+        </label>
+        <input
+          type="url"
+          id="websiteURL"
+          value={websiteURL}
+          onChange={(e) => setWebsiteURL(e.target.value)}
+          placeholder="https://example.com"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+        />
+        <button
+          className="mt-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+          onClick={() => {
+            // Implement capture website logic
+          }}
+        >
+          Capture Website
+        </button>
+      </div>
+
+      {/* Instructions List */}
+      <div>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-medium">Instructions</h2>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="p-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+          >
+            <PlusIcon className="h-5 w-5" />
+          </button>
+        </div>
+        <ul className="mt-2 space-y-2">
+          {instructions.map((instruction, index) => (
+            <li key={index} className="p-2 bg-white rounded-md shadow">
+              {instruction}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="space-x-2">
+        <button
+          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+          onClick={() => {
+            // Implement download logic
+          }}
+        >
+          Download Modified Website
+        </button>
+        <button
+          className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+          onClick={() => {
+            // Implement export logic
+          }}
+        >
+          Export A/B Test
+        </button>
+      </div>
+
+      {/* Activity Feed/Logs */}
+      <div>
+        <h2 className="text-lg font-medium">Activity Feed</h2>
+        <div className="mt-2 p-2 bg-white rounded-md shadow h-32 overflow-y-auto">
+          {/* Implement logs display */}
+          <p>No activity yet.</p>
+        </div>
+      </div>
+
+      {/* Add Instruction Modal */}
+      <Dialog
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        className="relative z-50"
+      >
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Dialog.Panel className="mx-auto max-w-sm rounded bg-white p-6">
+            <Dialog.Title className="text-lg font-medium">
+              Add Instruction
+            </Dialog.Title>
+            <textarea
+              className="mt-2 w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              rows={4}
+              value={newInstruction}
+              onChange={(e) => setNewInstruction(e.target.value)}
+            />
+            <div className="mt-4 flex justify-end space-x-2">
+              <button
+                className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+                onClick={() => setIsModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                onClick={addInstruction}
+              >
+                Save
+              </button>
+            </div>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
+    </section>
+  );
+}
+
+``````
+------ ai-web-developer/src/app/components/WebsitePreview.tsx ------
+``````
+// src/components/WebsitePreview.tsx
+import { useEffect, useState } from "react";
+
+interface WebsitePreviewProps {
+  websiteURL: string;
+  instructions: string[];
+}
+
+export default function WebsitePreview({
+  websiteURL,
+  instructions,
+}: WebsitePreviewProps) {
+  const [iframeSrc, setIframeSrc] = useState("");
+
+  useEffect(() => {
+    // Logic to update iframeSrc based on websiteURL and instructions
+    // This could involve calling an API that returns the modified website
+    setIframeSrc(websiteURL); // Placeholder
+  }, [websiteURL, instructions]);
+
+  if (!websiteURL) {
+    return (
+      <section className="w-full md:w-2/3 p-4 flex items-center justify-center">
+        <p className="text-gray-500">Enter a website URL to preview it here.</p>
+      </section>
+    );
+  }
+
+  return (
+    <section className="w-full md:w-2/3 p-4">
+      <iframe
+        src={iframeSrc}
+        title="Website Preview"
+        className="w-full h-screen border rounded-md"
+      ></iframe>
+    </section>
+  );
+}
+
+``````
+------ ai-web-developer/src/app/export/page.tsx ------
+``````
+// src/app/export/page.tsx
+import Header from "@/app/components/Header";
+import Footer from "@/app/components/Footer";
+
+export default function ExportPage() {
+  return (
+    <>
+      <Header />
+      <main className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold">Export A/B Test</h1>
+        {/* Export configuration form */}
+        <form className="mt-4 space-y-4">
+          <div>
+            <label htmlFor="testName" className="block text-sm font-medium">
+              A/B Test Name
+            </label>
+            <input
+              type="text"
+              id="testName"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            />
+          </div>
+          <div>
+            <label htmlFor="trafficSplit" className="block text-sm font-medium">
+              Traffic Split (%)
+            </label>
+            <input
+              type="number"
+              id="trafficSplit"
+              min="0"
+              max="100"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            />
+          </div>
+          {/* Additional configuration fields */}
+          <button
+            type="submit"
+            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+          >
+            Generate A/B Test Setup
+          </button>
+        </form>
+        {/* Logs or export status */}
+        <div className="mt-6">
+          <h2 className="text-lg font-medium">Export Status</h2>
+          <div className="mt-2 p-2 bg-white rounded-md shadow h-32 overflow-y-auto">
+            {/* Implement export status display */}
+            <p>No export activity yet.</p>
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </>
+  );
+}
+
+``````
+------ ai-web-developer/src/app/globals.css ------
+``````
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+``````
+------ ai-web-developer/src/app/layout.tsx ------
+``````
+// src/app/layout.tsx
+import { ReactNode } from "react";
+import "./globals.css";
+
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return (
+    <html lang="en">
+      <body className="bg-gray-50 text-gray-900">{children}</body>
+    </html>
+  );
+}
+
+``````
+------ ai-web-developer/src/app/page.tsx ------
+``````
+// src/app/page.tsx
+"use client";
+
+import { useState } from "react";
+import Header from "@/app/components/Header";
+import Footer from "@/app/components/Footer";
+import InstructionPanel from "@/app/components/InstructionPanel";
+import WebsitePreview from "@/app/components/WebsitePreview";
+
+export default function HomePage() {
+  const [websiteURL, setWebsiteURL] = useState("");
+  const [instructions, setInstructions] = useState<string[]>([]);
+
+  return (
+    <>
+      <Header />
+      <main className="flex flex-col md:flex-row">
+        <InstructionPanel
+          websiteURL={websiteURL}
+          setWebsiteURL={setWebsiteURL}
+          instructions={instructions}
+          setInstructions={setInstructions}
+        />
+        <WebsitePreview websiteURL={websiteURL} instructions={instructions} />
+      </main>
+      <Footer />
+    </>
+  );
+}
+
+``````

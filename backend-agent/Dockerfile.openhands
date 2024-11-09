@@ -1,0 +1,24 @@
+# Dockerfile.openhands
+
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+RUN apt-get update && \
+    apt-get install -y git build-essential curl && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN curl -sSL https://install.python-poetry.org | python3.12 - && \
+    ln -s /root/.local/bin/poetry /usr/local/bin/poetry
+
+RUN git clone https://github.com/All-Hands-AI/OpenHands.git /opt/OpenHands
+
+WORKDIR /opt/OpenHands
+
+RUN poetry config virtualenvs.create false && \
+    poetry install --no-interaction --no-ansi
+
+EXPOSE 3000
+
+CMD ["uvicorn", "openhands.api:app", "--host", "0.0.0.0", "--port", "3000"]
