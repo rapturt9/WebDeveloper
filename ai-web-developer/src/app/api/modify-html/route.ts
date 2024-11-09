@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     console.log("Generating modified HTML with OpenAI");
     const { text: modifiedHtml } = await generateText({
       model: openai("gpt-4-turbo"),
-      prompt: `Modify the following HTML content based on these instructions: ${instructions}\n\nHTML content:\n${html}`,
+      prompt: `Modify the following HTML content based on these instructions: ${instructions}\n\nHTML content:\n${html}. DO NOT OMIT ANY CODE. THE MODIFIED HTML SHOULD BE VALID.`,
     });
 
     console.log("Modified HTML:", modifiedHtml);
