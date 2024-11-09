@@ -12,7 +12,7 @@ from app.services.openhands_service import process_with_openhands
 
 class ModifyRequest(BaseModel):
     instructions: str
-    file: HttpUrl
+    file: str  # Changed from HttpUrl to str
 
 router = APIRouter()
 
@@ -28,7 +28,7 @@ async def modify_zip(request: ModifyRequest):
     try:
         # Download the ZIP file from the URL
         async with aiohttp.ClientSession() as session:
-            async with session.get(request.file) as resp:
+            async with session.get(str(request.file)) as resp:
                 if resp.status != 200:
                     raise HTTPException(status_code=400, detail="Failed to download ZIP file.")
                 content = await resp.read()
