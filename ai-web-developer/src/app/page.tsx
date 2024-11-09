@@ -23,6 +23,7 @@ export default function HomePage() {
           instructions={instructions}
           setInstructions={setInstructions}
           setModifiedHtml={setModifiedHtml}
+          modifiedHtml={modifiedHtml}
         />
         <WebsitePreview
           websiteURL={websiteURL}

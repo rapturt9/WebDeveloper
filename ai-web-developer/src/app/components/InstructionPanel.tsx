@@ -8,6 +8,7 @@ interface InstructionPanelProps {
   instructions: string;
   setInstructions: Dispatch<SetStateAction<string>>;
   setModifiedHtml: Dispatch<SetStateAction<string>>;
+  modifiedHtml: string;
 }
 
 export default function InstructionPanel({
@@ -16,6 +17,7 @@ export default function InstructionPanel({
   instructions,
   setInstructions,
   setModifiedHtml,
+  modifiedHtml,
 }: InstructionPanelProps) {
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
@@ -23,22 +25,26 @@ export default function InstructionPanel({
       const input = event.currentTarget.value.trim();
       if (input) {
         setWebsiteURL(input);
-        fetchAndModifyHtml(input, instructions);
+        fetchHtml(input);
       }
     }
   };
 
-  const fetchAndModifyHtml = async (url: string, instructions: string) => {
+  const fetchHtml = async (url: string) => {
     try {
       const response = await fetch(
         `/api/fetch-html?url=${encodeURIComponent(url)}`
       );
       const html = await response.text();
-
       console.log("Fetched HTML:", html);
-
       setModifiedHtml(html);
+    } catch (error) {
+      console.error("Error fetching HTML:", error);
+    }
+  };
 
+  const modifyHtml = async (url: string, instructions: string) => {
+    try {
       const modifyResponse = await fetch("/api/modify-html", {
         method: "POST",
         headers: {
@@ -97,7 +103,7 @@ export default function InstructionPanel({
       </div>
 
       <button
-        onClick={() => fetchAndModifyHtml(websiteURL, instructions)}
+        onClick={() => modifyHtml(websiteURL, instructions)}
         className="mt-4 p-2 bg-blue-500 text-white rounded"
       >
         Apply Instructions
