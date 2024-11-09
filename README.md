@@ -1,175 +1,5 @@
 # AI Web Developer MVP
 
-## Table of Contents
-
-1. [Project Overview](#project-overview)
-2. [Features](#features)
-3. [Technology Stack](#technology-stack)
-4. [Architecture](#architecture)
-5. [Frontend](#frontend)
-6. [Backend](#backend)
-7. [Integration with OpenHands](#integration-with-openhands)
-8. [Design Patterns](#design-patterns)
-9. [Setup Instructions](#setup-instructions)
-10. [Deployment](#deployment)
-11. [Contributing](#contributing)
-12. [License](#license)
-
----
-
-## Project Overview
-
-The **AI Web Developer MVP** project aims to create a streamlined system that autonomously modifies websites based on user-provided instructions. Leveraging **OpenHands** for AI-driven code generation and **Puppeteer** for website fetching, the system will:
-
-1. **Capture Existing Websites**: Use Puppeteer in the backend to fetch and download the current state of a website based on a user-provided URL.
-2. **Process User Instructions**: Accept a series of instructions detailing desired changes to the website via the frontend interface.
-3. **Automate Modifications**: Utilize OpenHands to implement the specified changes to the website code.
-4. **Return Modified Website**: Provide the modified website files for the user to download.
-5. **Export as A/B Test**: Allow users to export the original and modified website setup as an A/B test for deployment.
-
-This README outlines the requirements, architecture, and implementation details necessary to develop this MVP.
-
----
-
-## Features
-
-- **Website Capture**: Backend service using Puppeteer to fetch websites based on user-provided URLs.
-- **Instruction Input**: Frontend interface to input and manage a series of instructions for website modifications.
-- **AI-Powered Code Generation**: Integration with OpenHands to interpret instructions and modify website code accordingly.
-- **Modified Website Download**: Allow users to download the modified website files upon completion.
-- **A/B Test Export**: Export the original and modified website versions as an A/B test setup for developers.
-- **File Management**: Handle storage and retrieval of website files and modification instructions.
-
----
-
-## Technology Stack
-
-- **Frontend**:
-
-  - Next.js (React Framework)
-  - Tailwind CSS (Styling)
-  - Axios (API Calls)
-
-- **Backend**:
-
-  - Node.js with Express.js
-  - Puppeteer (Website Fetching)
-  - OpenHands SDK/API
-  - Docker (Containerization)
-
-- **Deployment**:
-
-  - **Frontend**: Vercel
-  - **Backend**: AWS (ECS, EKS, or EC2 with Docker)
-
-- **Other Tools**:
-  - Git & GitHub/GitLab
-  - Docker Compose (for local development)
-  - Webpack or Parcel (for bundling)
-
----
-
-## Architecture
-
-The application follows a **Modular** architecture to ensure scalability and maintainability. The primary components include:
-
-1. **Frontend Application**: Built with Next.js and styled using Tailwind CSS, deployed on Vercel.
-2. **Backend API**: Hosted on AWS as a Docker container, handling business logic, website fetching with Puppeteer, and AI integration with OpenHands.
-3. **AI Integration Module**: Communicates with OpenHands to generate code changes.
-4. **File Management**: Handles the storage and retrieval of website files and modification instructions.
-
-![Architecture Diagram](./docs/architecture-diagram.png) _(Provide an actual diagram in the docs folder)_
-
----
-
-## Frontend
-
-### Responsibilities
-
-- Provide a user-friendly interface for:
-  - Inputting the website URL.
-  - Inputting and managing modification instructions.
-  - Downloading the modified website.
-  - Exporting the setup as an A/B test.
-
-### Structure
-
-- **Pages**:
-
-  - **Index Page**: Input website URL and instructions.
-  - **Export Page**: Configure and export A/B test setups.
-
-- **Components**:
-  - **Header/Footer**: Navigation and branding.
-  - **URL Input Form**: Form to input the website URL.
-  - **Instruction Form**: Form to input modification instructions.
-  - **Download Button**: Trigger download of the modified website.
-  - **A/B Test Export Button**: Trigger export functionality.
-  - **Logs/Activity Feed**: Display processing steps and AI actions.
-
-### State Management
-
-- Use **Context API** to manage global state, including projects and instructions.
-
-### API Integration
-
-- Utilize **Axios** for HTTP requests to the backend services.
-
-### Design Considerations
-
-- **Responsive Design**: Ensure compatibility across devices.
-- **User Experience**: Intuitive workflows for users.
-- **Error Handling**: Display meaningful messages and recovery options.
-
-### Styling
-
-- Use **Tailwind CSS** for rapid and consistent styling.
-
----
-
-## Backend
-
-### Responsibilities
-
-- **API Endpoints**:
-
-  - **Website Fetching**: Fetch and store website files using Puppeteer based on user-provided URLs.
-  - **Instruction Processing**: Apply user instructions to the fetched website using OpenHands.
-  - **A/B Test Export**: Package and export original and modified website setups for A/B testing.
-
-- **File Management**:
-  - Handle storage and retrieval of website files and modification instructions.
-
-### Structure
-
-- **Controllers**: Handle incoming requests and responses.
-- **Services**: Business logic, including website fetching, AI integration, and A/B test packaging.
-- **Routes**: Define API endpoints and associate them with controllers.
-
-### Website Fetching with Puppeteer
-
-- **Process**:
-  1. Receive website URL from the frontend.
-  2. Use Puppeteer to navigate to the URL and capture the website as a single file (HTML, CSS, JS, assets).
-  3. Store the captured website files in the file storage system.
-  4. Return the captured website files to the frontend.
-
-### Instruction Processing with OpenHands
-
-- **Process**:
-  1. Receive user instructions from the frontend.
-  2. Send the current website code and instructions to OpenHands via the API client.
-  3. Receive modified code snippets or entire files from OpenHands.
-  4. Return the modified website files to the frontend.
-
-### A/B Test Export
-
-- **Process**:
-  1. Package the original and modified website files.
-  2. Provide a downloadable A/B test setup to the user.
-
----
-
 ## Integration with OpenHands
 
 ### Responsibilities
@@ -210,17 +40,17 @@ OpenHands provides a Docker container that can be used to execute instructions. 
 
    ```bash
    docker run -it --pull=always \
-       -e SANDBOX_RUNTIME_CONTAINER_IMAGE=docker.all-hands.dev/all-hands-ai/runtime:0.13-nikolaik \
-       -v /var/run/docker.sock:/var/run/docker.sock \
-       -p 3000:3000 \
-       --add-host host.docker.internal:host-gateway \
-       --name openhands-app \
-       docker.all-hands.dev/all-hands-ai/openhands:0.13
+        -e SANDBOX_RUNTIME_CONTAINER_IMAGE=docker.all-hands.dev/all-hands-ai/runtime:0.13-nikolaik \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -p 4000:3000 \
+        --add-host host.docker.internal:host-gateway \
+        --name openhands-app \
+        docker.all-hands.dev/all-hands-ai/openhands:0.13
    ```
 
 3. **Backend Integration**:
 
-   - **API Communication**: The backend will communicate with the OpenHands container via HTTP requests to `http://localhost:3000` (assuming default port mapping).
+   - **API Communication**: The backend will communicate with the OpenHands container via HTTP requests to `http://localhost:4000` (assuming default port mapping).
    - **Docker Networking**: Ensure that both the backend and OpenHands containers are on the same Docker network if deployed separately. Alternatively, use Docker Compose to orchestrate both services.
 
 4. **Using Docker Compose for Simplified Setup**:
@@ -244,7 +74,7 @@ OpenHands provides a Docker container that can be used to execute instructions. 
      openhands:
        image: docker.all-hands.dev/all-hands-ai/openhands:0.13
        ports:
-         - "3000:3000"
+         - "4000:3000"
        environment:
          - SANDBOX_RUNTIME_CONTAINER_IMAGE=docker.all-hands.dev/all-hands-ai/runtime:0.13-nikolaik
        volumes:
@@ -263,7 +93,7 @@ OpenHands provides a Docker container that can be used to execute instructions. 
       docker-compose up -d
       ```
 
-   This setup ensures that both the backend and OpenHands services are up and running, and the backend can communicate with OpenHands via `http://openhands:3000`.
+   This setup ensures that both the backend and OpenHands services are up and running, and the backend can communicate with OpenHands via `http://openhands:4000`.
 
 ### Error Handling
 
@@ -459,7 +289,7 @@ OpenHands provides a Docker container that can be used to execute instructions. 
        openhands:
          image: docker.all-hands.dev/all-hands-ai/openhands:0.13
          ports:
-           - "3000:3000"
+           - "4000:3000"
          environment:
            - SANDBOX_RUNTIME_CONTAINER_IMAGE=docker.all-hands.dev/all-hands-ai/runtime:0.13-nikolaik
          volumes:
@@ -535,7 +365,7 @@ OpenHands provides a Docker container that can be used to execute instructions. 
 4. **Set Up Networking**:
 
    - **VPC Configuration**: Ensure the backend is accessible to the frontend.
-   - **Security Groups**: Open necessary ports (e.g., 5000 for API, 3000 for OpenHands if needed).
+   - **Security Groups**: Open necessary ports (e.g., 5000 for API, 4000 for OpenHands if needed).
 
 5. **Scaling and Monitoring**:
 
@@ -566,66 +396,66 @@ OpenHands provides a Docker container that can be used to execute instructions. 
      name: CI/CD Pipeline
 
      on:
-       push:
-         branches: [main]
-       pull_request:
-         branches: [main]
+        push:
+           branches: [main]
+        pull_request:
+           branches: [main]
 
      jobs:
-       build:
-         runs-on: ubuntu-latest
+        build:
+           runs-on: ubuntu-latest
 
-         steps:
-           - uses: actions/checkout@v2
+           steps:
+             - uses: actions/checkout@v2
 
-           - name: Set up Node.js
-             uses: actions/setup-node@v2
-             with:
-               node-version: "16"
+             - name: Set up Node.js
+                uses: actions/setup-node@v2
+                with:
+                   node-version: "16"
 
-           - name: Install dependencies
-             run: |
-               cd frontend
-               yarn install
-               cd ../backend
-               yarn install
+             - name: Install dependencies
+                run: |
+                   cd frontend
+                   yarn install
+                   cd ../backend
+                   yarn install
 
-           - name: Run tests
-             run: |
-               cd frontend
-               yarn test --ci
-               cd ../backend
-               yarn test --ci
+             - name: Run tests
+                run: |
+                   cd frontend
+                   yarn test --ci
+                   cd ../backend
+                   yarn test --ci
 
-           - name: Build frontend
-             run: |
-               cd frontend
-               yarn build
+             - name: Build frontend
+                run: |
+                   cd frontend
+                   yarn build
 
-           - name: Build backend
-             run: |
-               cd backend
-               yarn build
+             - name: Build backend
+                run: |
+                   cd backend
+                   yarn build
 
-           - name: Push Docker Image to ECR
-             env:
-               AWS_REGION: your-region
-               AWS_ACCOUNT_ID: your-account-id
-               ECR_REPO: ai-web-developer-backend
-               IMAGE_TAG: latest
-             run: |
-               aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-               docker build -t $ECR_REPO ./backend
-               docker tag $ECR_REPO:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG
-               docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG
+             - name: Push Docker Image to ECR
+                env:
+                   AWS_REGION: your-region
+                   AWS_ACCOUNT_ID: your-account-id
+                   ECR_REPO: ai-web-developer-backend
+                   IMAGE_TAG: latest
+                run: |
+                   aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+                   docker build -t $ECR_REPO ./backend
+                   docker tag $ECR_REPO:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG
+                   docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG
 
-           - name: Deploy to AWS ECS
-             uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-             with:
-               task-definition: backend-task-def.json
-               service: ai-web-developer-backend-service
-               cluster: ai-web-developer-cluster
-               wait-for-service-stability: true
+             - name: Deploy to AWS ECS
+                uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+                with:
+                   task-definition: backend-task-def.json
+                   service: ai-web-developer-backend-service
+                   cluster: ai-web-developer-cluster
+                   wait-for-service-stability: true
      ```
 
    - **Notes**:
@@ -677,3 +507,6 @@ This project is licensed under the [MIT License](./LICENSE).
 ---
 
 **Note**: This MVP does not include security features such as authentication or input validation. It is intended for internal use and testing purposes only. For production deployment, implementing security measures is highly recommended.
+
+docker-compose up --build
+docker exec -it openhands-service /bin/sh

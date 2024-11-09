@@ -1,4 +1,4 @@
-# docker-compose.yml
+# backend-agent/docker-compose.yml
 
 services:
   backend:
@@ -13,6 +13,7 @@ services:
       - OPENHANDS_WORKSPACE=/opt/workspace
       - LLM_API_KEY=${LLM_API_KEY}
       - LLM_MODEL=${LLM_MODEL}
+      - OPENHANDS_SERVICE_URL=http://openhands:3000/api/modify
     env_file:
       - .env
     volumes:
@@ -22,18 +23,14 @@ services:
       - openhands
 
   openhands:
-    build:
-      context: .
-      dockerfile: Dockerfile.openhands
+    image: docker.all-hands.dev/all-hands-ai/openhands:0.13
     container_name: openhands-service
     ports:
       - "3000:3000"
     environment:
-      - WORKSPACE=/opt/workspace
-      - LLM_API_KEY=${LLM_API_KEY}
-      - LLM_MODEL=${LLM_MODEL}
+      - SANDBOX_RUNTIME_CONTAINER_IMAGE=docker.all-hands.dev/all-hands-ai/runtime:0.13-nikolaik
     volumes:
-      - ./workspace:/opt/workspace
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./config.toml:/app/config.toml # Mount your config.toml
     extra_hosts:
       - "host.docker.internal:host-gateway"

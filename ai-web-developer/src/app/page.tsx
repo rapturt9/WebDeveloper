@@ -10,7 +10,8 @@ import WebsitePreview from "@/app/components/WebsitePreview";
 
 export default function HomePage() {
   const [websiteURL, setWebsiteURL] = useState("");
-  const [instructions, setInstructions] = useState<string[]>([]);
+  const [instructions, setInstructions] = useState("");
+  const [modifiedHtml, setModifiedHtml] = useState("");
 
   return (
     <>
@@ -21,8 +22,13 @@ export default function HomePage() {
           setWebsiteURL={setWebsiteURL}
           instructions={instructions}
           setInstructions={setInstructions}
+          setModifiedHtml={setModifiedHtml}
         />
-        <WebsitePreview websiteURL={websiteURL} instructions={instructions} />
+        <WebsitePreview
+          websiteURL={websiteURL}
+          instructions={instructions}
+          modifiedHtml={modifiedHtml}
+        />
       </main>
       <Footer />
     </>

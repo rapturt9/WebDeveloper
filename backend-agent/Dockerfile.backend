@@ -1,4 +1,5 @@
-# Use the official Python base image
+# backend-agent/Dockerfile.backend
+
 FROM python:3.12-slim
 
 # Set environment variables
@@ -7,18 +8,24 @@ ENV PYTHONUNBUFFERED=1
 
 # Install system dependencies
 RUN apt-get update && \
-    apt-get install -y git build-essential && \
+    apt-get install -y git build-essential curl && \
     rm -rf /var/lib/apt/lists/*
 
 # Install Poetry
 RUN pip install --upgrade pip && pip install poetry
 
-# Set work directory
+# Set work directory for backend
 WORKDIR /app
 
 # Copy backend requirements and install
 COPY requirements.txt .
 RUN pip install -r requirements.txt
+
+# Clone OpenHands into /opt/OpenHands
+RUN git clone https://github.com/All-Hands-AI/OpenHands.git /opt/OpenHands
+
+# Install Python dependencies for OpenHands
+RUN pip install /opt/OpenHands
 
 # Copy backend application code
 COPY . .

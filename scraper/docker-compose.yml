@@ -1,0 +1,22 @@
+version: "3.8" # Updated to a more recent version
+
+services:
+  singlefile:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: singlefile-custom:latest
+    container_name: singlefile-service
+    ports:
+      - "8080:80" # Maps port 80 in the container to port 8080 on the host
+    environment:
+      SINGLEFILE_EXECUTABLE: /node_modules/single-file/cli/single-file
+      BROWSER_PATH: /usr/bin/google-chrome
+      BROWSER_ARGS: --no-sandbox
+    restart: unless-stopped
+    # Optional: Define healthchecks
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
